@@ -16,4 +16,28 @@
   DW    18                ; 1个磁道（track）拥有的扇区数（必须是18）
   DW    2                 ; 磁头数（必须为2）
   DD    0                 ; 隐藏的扇区数
-  DD    2880              ; 大容量扇区总数，若
+  DD    2880              ; 大容量扇区总数，若13行记录的值为0则使用本行记录扇区数
+  DB    0                 ; 中断0x13的设备号
+  DB    0                 ; Windows NT标识符
+  DB    0x29              ; 扩展引导标识
+  DD    0xffffffff        ; 卷序列号
+  DB    "TITANIC-OS "     ; 卷标（11字节）
+  DB    "FAT12   "        ; 文件系统类型（8字节）
+
+; 第二部分：引导代码、数据以及其它信息
+  RESB  18                ; 空18字节
+
+; 程序主体
+  DB    0xb8, 0x00, 0x00, 0x8e, 0xd0, 0xbc, 0x00, 0x7c
+  DB    0x8e, 0xd8, 0x8e, 0xc0, 0xbe, 0x74, 0x7c, 0x8a
+  DB    0x04, 0x83, 0xc6, 0x01, 0x3c, 0x00, 0x74, 0x09
+  DB    0xb4, 0x0e, 0xbb, 0x0f, 0x00, 0xcd, 0x10, 0xeb
+  DB    0xee, 0xf4, 0xeb, 0xfd
+
+; 信息显示部分数据
+  DB    0x0a, 0x0a        ; 两个换行
+  DB    "Hello, this is titanic OS!"
+  DB    0x0a              ; 换行
+  DB    0
+
+  RESB  
