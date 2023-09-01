@@ -18,4 +18,40 @@
   DW    2                 ; 磁头数（必须为2）
   DD    0                 ; 隐藏的扇区数
   DD    2880              ; 大容量扇区总数，若14行记录的值为0则使用本行记录扇区数
-  DB 
+  DB    0                 ; 中断0x13的设备号
+  DB    0                 ; Windows NT标识符
+  DB    0x29              ; 扩展引导标识
+  DD    0xffffffff        ; 卷序列号
+  DB    "TITANIC-OS "     ; 卷标（11字节）
+  DB    "FAT12   "        ; 文件系统类型（8字节）
+  RESB  18                ; 空18字节
+
+; 程序核心
+
+entry:
+  MOV   AX, 0             ; 初始化寄存器
+  MOV   SS, AX
+  MOV   SP, 0x7c00
+  MOV   DS, AX
+  MOV   ES, AX
+
+  MOV   SI, msg
+putloop:
+  MOV   AL, [SI]
+  ADD   SI, 1             ; SI加1
+  CMP   AL, 0
+
+  JE    fin
+  MOV   AH, 0x0e          ; 显示一个文字
+  MOV   BX, 15            ; 指定字符颜色
+  INT   0x10              ; 调用显卡BIOS
+  JMP   putloop
+
+fin:
+  HLT                     ; CPU停止，等待指令
+  JMP   fin               ; 无限循环
+
+msg:
+  DB    0x0a, 0x0a        ; 两个换行
+  DB    "============="
+  DB    0x
