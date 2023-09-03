@@ -54,4 +54,19 @@ fin:
 msg:
   DB    0x0a, 0x0a        ; 两个换行
   DB    "============="
-  DB    0x
+  DB    0x0a
+  DB    0x0d
+  DB    "Hello, Titanic OS!"
+  DB    0x0a
+  DB    0x0d
+  DB    "We have handsome Koda and beautiful Koni."
+  DB    0x0a
+  DB    0x0d
+  DB    "AUTHOR: KODA"
+  DB    0x0a              ; 换行
+  DB    0x0d
+  DB    "============="
+  DB    0
+
+  RESB  0x1fe - ($ - $$)  ; 填写0x00，直到0x001fe
+  DB    0x55, 0xaa
