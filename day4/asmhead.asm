@@ -130,3 +130,20 @@ memcpy:
   ADD   EDI, 4
   SUB   ECX, 1
   JNZ   memcpy            ; 结果不为0跳转至memcpy
+  RET
+; memcpy地址前缀大小
+
+  ALIGN 16
+GDT0:
+  RESB  8                 ; 初始值
+  DW    0xffff, 0x0000, 0x9200, 0x00cf  ; 可写的32位段寄存器
+  DW    0xffff, 0x0000, 0x9a28, 0x0047  ; 可执行的文件的32位寄存器
+
+  DW    0
+
+GDTR0:
+  DW    8*3-1
+  DD    GDT0
+
+  ALIGN 16
+bootpack:
