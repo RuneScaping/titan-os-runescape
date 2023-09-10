@@ -57,4 +57,23 @@ io_out16:               ; void io_out16(int port, int data);
 
 io_out32:               ; void io_out32(int port, int data);
   MOV     EDX, [ESP+4]  ; port
-  MOV     EAX, [ESP+8]  ; da
+  MOV     EAX, [ESP+8]  ; data
+  OUT     DX, EAX
+  RET
+
+io_load_eflags:         ; int io_load_eflags(void);
+  PUSHFD
+  POP     EAX
+  RET
+
+io_store_eflags:        ; void io_store_eflags(int eflags);
+  MOV     EAX, [ESP+4]  ; eflags
+  PUSH    EAX
+  POPFD
+  RET
+
+; write_mem8:             ; void write_mem8(int addr, int data);
+;   MOV     ECX, [ESP+4]  ; addr
+;   MOV     AL, [ESP+8]   ; data
+;   MOV     [ECX], AL
+;   RET
