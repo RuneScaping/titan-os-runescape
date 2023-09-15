@@ -25,4 +25,37 @@ CYLS   EQU   10               ; 读取的柱面数量（CYLS = cylinders）
   DB    0x29              ; 扩展引导标识
   DD    0xffffffff        ; 卷序列号
   DB    "TITIANIC-OS "     ; 卷标（11字节）
-  DB    "FAT12  
+  DB    "FAT12   "        ; 文件系统类型（8字节）
+  RESB  18                ; 空18字节
+
+; 程序核心
+
+entry:
+  MOV   AX, 0             ; 初始化寄存器
+  MOV   SS, AX
+  MOV   SP, 0x7c00
+  MOV   DS, AX
+
+; 读取硬盘
+  MOV   AX, 0x0820
+  MOV   ES, AX
+  MOV   CH, 0             ; 柱面0
+  MOV   DH, 0             ; 磁头0
+  MOV   CL, 2             ; 扇区2
+
+readloop:
+  MOV   SI, 0             ; 记录失败次数的寄存器
+retry:
+  MOV   AH, 0x02          ; AH=0x02：读盘
+  MOV   AL, 1             ; 1个扇区
+  MOV   BX, 0
+  MOV   DL, 0x00          ; A驱动器
+  INT   0x13              ; 调用磁盘BIOS
+  JNC   next              ; 没出错跳转到next
+
+  ADD   SI, 1             ; 失败次数+1
+  CMP   SI, 5             ; 失败次数是否达到5次
+  JAE   error             ; 失败次数达到5次跳转到error
+  MOV   AH, 0x00
+  MOV   DL, 0x00          ; A驱动器
+  INT   0x13              ; 重置驱动
