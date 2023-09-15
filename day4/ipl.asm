@@ -58,4 +58,41 @@ retry:
   JAE   error             ; 失败次数达到5次跳转到error
   MOV   AH, 0x00
   MOV   DL, 0x00          ; A驱动器
-  INT   0x13              ; 重置驱动
+  INT   0x13              ; 重置驱动器
+  JMP   retry
+
+next:
+  MOV   AX, ES            ; 把内存地址后移0x200
+  ADD   AX, 0x0020
+  MOV   ES, AX            ; 实现ES += 0x0020的目的
+
+  ; 扇区范围 1～18
+  ADD   CL, 1             ; 扇区加1
+  CMP   CL, 18            ; 扇区是否达到18
+  JBE   readloop          ; 小于等于18扇区则跳转到readloop
+
+  MOV   CL, 1             ; 恢复到扇区1
+  ; 磁头范围 0～1（正面0，反面1）
+  ADD   DH, 1
+  CMP   DH, 2
+  JB    readloop          ; 磁头未达到2则跳转到readloop
+
+  MOV   DH, 0
+  ; 柱面范围 0 ～ 79
+  ADD   CH, 1
+  CMP   CH, CYLS
+  JB    readloop          ; 读取指定数量的柱面，未达到CYLS则跳转readloop
+
+; 读取完毕，跳转到haribote.sys执行
+  MOV   [0x0ff0], CH      ; 记下IPL读了多远
+  JMP   0xc200
+
+fin:
+  HLT                     ; CPU停止，等待指令
+  JMP   fin               ; 无限循环
+
+error:
+  MOV   SI, msg
+
+putloop:
+  MOV  
