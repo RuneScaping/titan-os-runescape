@@ -129,3 +129,172 @@ void set_palette(int start, int end, unsigned char *rgb) {
 void box_fill8(unsigned char *vram, int xsize, unsigned char c, int x0, int y0,
                int x1, int y1) {
   for (int y = y0; y <= y1; y++) {
+    for (int x = x0; x <= x1; x++) {
+      vram[y * xsize + x] = c;
+    }
+  }
+}
+
+/**
+ * 显示画面背景
+ * @param vram
+ * @param x
+ * @param y
+ */
+void init_screen(unsigned char *vram, int x, int y) {
+  box_fill8(vram, x, COL8_840084, 0, 0, x - 1, y - 29);
+  box_fill8(vram, x, COL8_C6C6C6, 0, y - 28, x - 1, y - 28);
+  box_fill8(vram, x, COL8_FFFFFF, 0, y - 27, x - 1, y - 27);
+  box_fill8(vram, x, COL8_C6C6C6, 0, y - 26, x - 1, y - 1);
+
+  box_fill8(vram, x, COL8_FFFFFF, 3, y - 24, 59, y - 24);
+  box_fill8(vram, x, COL8_FFFFFF, 2, y - 24, 2, y - 4);
+  box_fill8(vram, x, COL8_848484, 3, y - 4, 59, y - 4);
+  box_fill8(vram, x, COL8_848484, 59, y - 23, 59, y - 5);
+  box_fill8(vram, x, COL8_000000, 2, y - 4, 59, y - 3);
+  box_fill8(vram, x, COL8_000000, 60, y - 24, 60, y - 3);
+
+  box_fill8(vram, x, COL8_848484, x - 47, y - 24, x - 4, y - 24);
+  box_fill8(vram, x, COL8_848484, x - 47, y - 23, x - 47, y - 4);
+  box_fill8(vram, x, COL8_FFFFFF, x - 47, y - 3, x - 4, y - 3);
+  box_fill8(vram, x, COL8_FFFFFF, x - 3, y - 24, x - 3, y - 3);
+}
+
+void put_font8(unsigned char *vram, int xsize, int x, int y, char c,
+               char *font) {
+  unsigned char *p;
+  char d;
+
+  for (int i = 0; i < 16; i++) {
+    p = vram + (y + i) * xsize + x;
+    d = font[i];
+
+    if ((d & 0x80) != 0) {
+      p[0] = c;
+    }
+
+    if ((d & 0x40) != 0) {
+      p[1] = c;
+    }
+
+    if ((d & 0x20) != 0) {
+      p[2] = c;
+    }
+
+    if ((d & 0x10) != 0) {
+      p[3] = c;
+    }
+
+    if ((d & 0x08) != 0) {
+      p[4] = c;
+    }
+
+    if ((d & 0x04) != 0) {
+      p[5] = c;
+    }
+
+    if ((d & 0x02) != 0) {
+      p[6] = c;
+    }
+
+    if ((d & 0x01) != 0) {
+      p[7] = c;
+    }
+  }
+}
+
+void put_fonts8_asc(unsigned char *vram, int xsize, int x, int y, char c,
+                    char *s) {
+  extern char hankaku[4096];
+
+  for (; *s != '\0'; s++) {
+    put_font8(vram, xsize, x, y, c, hankaku + *s * 16);
+    x += 8;
+  }
+}
+
+void init_mouse_cursor8(char *mouse, char bc) {
+  static char cursor[16][16] = {
+          "**************..",
+          "*OOOOOOOOOOO*...",
+          "*OOOOOOOOOO*....",
+          "*OOOOOOOOO*.....",
+          "*OOOOOOOO*......",
+          "*OOOOOOO*.......",
+          "*OOOOOOO*.......",
+          "*OOOOOOOO*......",
+          "*OOOO**OOO*.....",
+          "*OOO*..*OOO*....",
+          "*OO*....*OOO*...",
+          "*O*......*OOO*..",
+          "**........*OOO*.",
+          "*..........*OOO*",
+          "............*OO*",
+          ".............***"};
+
+  for (int y = 0; y < 16; y++) {
+    for (int x = 0; x < 16; x++) {
+      if (cursor[y][x] == '*') {
+        mouse[y * 16 + x] = COL8_000000;
+      }
+
+      if (cursor[y][x] == 'O') {
+        mouse[y * 16 + x] = COL8_FFFFFF;
+      }
+
+      if (cursor[y][x] == '.') {
+        mouse[y * 16 + x] = bc;
+      }
+    }
+  }
+}
+
+void put_block8_8(unsigned char *vram, int vxsize, int pxsize, int pysize,
+                  int px0, int py0, char *buf, int bxsize) {
+  for (int y = 0; y < pysize; y++) {
+    for (int x = 0; x < pxsize; x++) {
+      vram[(py0 + y) * vxsize + (px0 + x)] = buf[y * bxsize + x];
+    }
+  }
+}
+
+void init_gdtidt(void) {
+  struct SegmentDescriptor *gdt = (struct SegmentDescriptor *)0x00270000;
+  struct GateDescriptor *idt = (struct GateDescriptor *)0x0026f800;
+
+  for (int i = 0; i < 8192; i++) { // GDT段号记录表初始化
+    set_segmdesc(gdt + i, 0, 0, 0);
+  }
+
+  set_segmdesc(gdt + 1, 0xffffffff, 0x00000000, 0x4092);
+  set_segmdesc(gdt + 2, 0x0007ffff, 0x00280000, 0x409a);
+  load_gdtr(0xffff, 0x00270000);
+
+  for (int i = 0; i < 256; i++) { // IDT中断记录表初始化
+    set_gatedesc(idt + i, 0, 0, 0);
+  }
+  load_idtr(0x7ff, 0x0026f800);
+}
+
+void set_segmdesc(struct SegmentDescriptor *sd, unsigned int limit, int base,
+                  int ar) {
+  if (limit > 0xfffff) {
+    ar |= 0x8000; // G_bit = 1
+    limit /= 0x1000;
+  }
+
+  sd->limit_low = limit & 0xffff;
+  sd->base_low = base & 0xffff;
+  sd->base_mid = (base >> 16) & 0xff;
+  sd->access_right = ar & 0xff;
+  sd->limit_high = ((limit >> 16) & 0x0f) | ((ar >> 8) | 0xf0);
+  sd->base_high = (base >> 24) & 0xff;
+}
+
+void set_gatedesc(struct GateDescriptor *gd, int offset, int selector, int ar) {
+  gd->offset_low = offset & 0xffff;
+  gd->selector = selector;
+  gd->dw_count = (ar >> 8) & 0xff;
+  gd->access_right = ar & 0xff;
+  gd->offset_high = (offset >> 16) & 0xffff;
+}
