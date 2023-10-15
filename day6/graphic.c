@@ -56,4 +56,25 @@ void init_screen8(unsigned char *vram, int x, int y) {
   box_fill8(vram, x, COL8_C6C6C6, 0, y - 26, x - 1, y - 1);
 
   box_fill8(vram, x, COL8_FFFFFF, 3, y - 24, 59, y - 24);
-  box_fill8(vram, x, COL8_FFFFFF, 2, y - 24, 2,
+  box_fill8(vram, x, COL8_FFFFFF, 2, y - 24, 2, y - 4);
+  box_fill8(vram, x, COL8_848484, 3, y - 4, 59, y - 4);
+  box_fill8(vram, x, COL8_848484, 59, y - 23, 59, y - 5);
+  box_fill8(vram, x, COL8_000000, 2, y - 4, 59, y - 3);
+  box_fill8(vram, x, COL8_000000, 60, y - 24, 60, y - 3);
+
+  box_fill8(vram, x, COL8_848484, x - 47, y - 24, x - 4, y - 24);
+  box_fill8(vram, x, COL8_848484, x - 47, y - 23, x - 47, y - 4);
+  box_fill8(vram, x, COL8_FFFFFF, x - 47, y - 3, x - 4, y - 3);
+  box_fill8(vram, x, COL8_FFFFFF, x - 3, y - 24, x - 3, y - 3);
+}
+
+void put_font8(unsigned char *vram, int xsize, int x, int y, char c,
+               char *font) {
+  unsigned char *p;
+  char d;
+
+  for (int i = 0; i < 16; i++) {
+    p = vram + (y + i) * xsize + x;
+    d = font[i];
+
+    if (
