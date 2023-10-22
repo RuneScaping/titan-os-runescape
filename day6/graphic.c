@@ -77,4 +77,42 @@ void put_font8(unsigned char *vram, int xsize, int x, int y, char c,
     p = vram + (y + i) * xsize + x;
     d = font[i];
 
-    if (
+    if ((d & 0x80) != 0) {
+      p[0] = c;
+    }
+    if ((d & 0x40) != 0) {
+      p[1] = c;
+    }
+    if ((d & 0x20) != 0) {
+      p[2] = c;
+    }
+    if ((d & 0x10) != 0) {
+      p[3] = c;
+    }
+    if ((d & 0x08) != 0) {
+      p[4] = c;
+    }
+    if ((d & 0x04) != 0) {
+      p[5] = c;
+    }
+    if ((d & 0x02) != 0) {
+      p[6] = c;
+    }
+    if ((d & 0x01) != 0) {
+      p[7] = c;
+    }
+  }
+}
+
+void put_fonts8_asc(unsigned char *vram, int xsize, int x, int y, char c,
+                    char *s) {
+  extern char hankaku[4096];
+
+  for (; *s != '\0'; s++) {
+    put_font8(vram, xsize, x, y, c, hankaku + *s * 16);
+    x += 8;
+  }
+}
+
+void init_mouse_cursor8(char *mouse, char bc) {
+  static char
