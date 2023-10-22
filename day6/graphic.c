@@ -145,4 +145,16 @@ void init_mouse_cursor8(char *mouse, char bc) {
 
       if (cursor[y][x] == '.') {
         mouse[y * 16 + x] = bc;
-     
+      }
+    }
+  }
+}
+
+void put_block8_8(unsigned char *vram, int vxsize, int pxsize, int pysize,
+                  int px0, int py0, char *buf, int bxsize) {
+  for (int y = 0; y < pysize; y++) {
+    for (int x = 0; x < pxsize; x++) {
+      vram[(py0 + y) * vxsize + (px0 + x)] = buf[y * bxsize + x];
+    }
+  }
+}
