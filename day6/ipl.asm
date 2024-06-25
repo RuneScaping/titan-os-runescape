@@ -21,4 +21,37 @@ CYLS   EQU   10               ; 读取的柱面数量（CYLS = cylinders）
   DD    0                 ; 隐藏的扇区数
   DD    2880              ; 大容量扇区总数，若16行记录的值为0则使用本行记录扇区数
   DB    0                 ; 中断0x13的设备号
-  DB    0                 ; Win
+  DB    0                 ; Windows NT标识符
+  DB    0x29              ; 扩展引导标识
+  DD    0xffffffff        ; 卷序列号
+  DB    "TITANIC-OS "     ; 卷标（11字节）
+  DB    "FAT12   "        ; 文件系统类型（8字节）
+  RESB  18                ; 空18字节
+
+; 程序核心
+
+entry:
+  MOV   AX, 0             ; 初始化寄存器
+  MOV   SS, AX
+  MOV   SP, 0x7c00
+  MOV   DS, AX
+
+; 读取硬盘
+  MOV   AX, 0x0820
+  MOV   ES, AX
+  MOV   CH, 0             ; 柱面0
+  MOV   DH, 0             ; 磁头0
+  MOV   CL, 2             ; 扇区2
+
+readloop:
+  MOV   SI, 0             ; 记录失败次数的寄存器
+retry:
+  MOV   AH, 0x02          ; AH=0x02：读盘
+  MOV   AL, 1             ; 1个扇区
+  MOV   BX, 0
+  MOV   DL, 0x00          ; A驱动器
+  INT   0x13              ; 调用磁盘BIOS
+  JNC   next              ; 没出错跳转到next
+
+  ADD   SI, 1             ; 失败次数+1
+  CMP   SI, 5   
