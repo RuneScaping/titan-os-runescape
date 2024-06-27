@@ -84,4 +84,32 @@ next:
   JB    readloop          ; 读取指定数量的柱面，未达到CYLS则跳转readloop
 
 ; 读取完毕，跳转到haribote.sys执行
-  MOV   [0x0ff0], CH
+  MOV   [0x0ff0], CH      ; 记下IPL读了多远（谷歌翻译自IPLがどこまで読んだのかをメモ）
+  JMP   0xc200
+
+fin:
+  HLT                     ; CPU停止，等待指令
+  JMP   fin               ; 无限循环
+
+error:
+  MOV   SI, msg
+
+putloop:
+  MOV   AL, [SI]
+  ADD   SI, 1             ; SI加1
+  CMP   AL, 0
+
+  JE    fin
+  MOV   AH, 0x0e          ; 显示一个文字
+  MOV   BX, 15            ; 指定字符颜色
+  INT   0x10              ; 调用显卡BIOS
+  JMP   putloop
+
+msg:
+  DB    0x0a, 0x0a        ; 两个换行
+  DB    "load error"
+  DB    0x0a              ; 换行
+  DB    0
+
+  RESB  0x1fe - ($ - $$)  ; 填写0x00，直到0x001fe
+  DB    0x55, 0xaa
