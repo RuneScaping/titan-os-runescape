@@ -1,0 +1,20 @@
+ifndef GCCPREFIX
+GCCPREFIX := x86_64-elf-
+endif
+
+AS	:= nasm
+CC	:= $(GCCPREFIX)gcc
+LD	:= $(GCCPREFIX)ld
+OBJCOPY	:= $(GCCPREFIX)objcopy
+QEMU	:= qemu-system-i386
+
+CFLAGS += -Wall -Wno-format -Wno-unused
+CFLAGS += -std=gnu99 -static -m32
+CFLAGS += -I ./include -I ./libc/include
+CFLAGS += -ffunction-sections -nostdlib -nostdinc -fno-builtin -ffreestanding
+CFLAGS += -fno-pie
+
+QEMU_FLAGS 	+= -no-reboot -d in_asm
+
+# C Library Objects
+L_OBJS  :

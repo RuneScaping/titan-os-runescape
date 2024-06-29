@@ -17,4 +17,16 @@ SECTIONS
 
   .rodata :
   {
-    *(.ro
+    *(.rodata)
+  } > ram
+
+  .data : 
+  {
+    *(.data)
+  } > ram
+
+  .bss : 
+  {
+    *(.bss)
+  } > ram
+}
