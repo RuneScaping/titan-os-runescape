@@ -49,4 +49,22 @@ titanic.sys: asmhead.bin kernel.sys
 	cat kernel.sys >> titanic.sys
 
 image: ipl.bin titanic.sys
-	dd if=/dev/zero of=$(
+	dd if=/dev/zero of=$(IMG) bs=512 count=2880
+	dd if=ipl.bin of=$(IMG) bs=512 count=1 conv=notrunc
+	dd if=titanic.sys of=$(IMG) seek=33 bs=512 conv=notrunc
+
+all: ${OBJS} titanic.sys image
+
+clean:
+	rm -rf *.bin
+	rm -rf *.sys
+	rm -rf *.obj
+	rm -rf *.lst
+	rm -rf $(IMG)
+	rm -rf **/**/*.bin
+
+qemu: clean all
+	$(QEMU) -fda $(IMG) $(QEMU_FLAGS)
+
+.PHONY:
+	all
