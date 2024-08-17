@@ -12,4 +12,9 @@ int io_in32(int port);
 
 void io_out8(int port, int data);
 void io_out16(int port, int data);
-void io_out32(int port
+void io_out32(int port, int data);
+
+int io_load_eflags(void);
+void io_store_eflags(int eflags);
+
+#endif // _IO_H_
