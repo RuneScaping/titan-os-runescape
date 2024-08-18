@@ -11,4 +11,6 @@
 extern struct FIFO8 mousefifo;
 extern unsigned char mousebuf[MOUSE_FIFO_BUF_SIZE];
 
-void enable
+void enable_mouse(void);
+
+#endif // _MOUSE_H_
