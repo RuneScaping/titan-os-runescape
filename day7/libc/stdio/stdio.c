@@ -60,4 +60,41 @@ void vprintfmt(void (*fputch)(char, void *), void *data, const char *fmt,
   reswitch:
     switch (ch = *fmt++) {
     case '0':
-      attr.pad
+      attr.pad = '0';
+      goto reswitch;
+
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      for (attr.width = 0;; ++fmt) {
+        attr.width = attr.width * 10 + ch - '0';
+        ch = *fmt;
+        if (ch < '0' || ch > '9')
+          break;
+      }
+      goto reswitch;
+
+    case 'c':
+      fputch(va_arg(ap, int), data);
+      break;
+
+    case 'd':
+      num = va_arg(ap, int);
+      if ((long)num < 0) {
+        attr.negative = 1;
+        num = -(long)num;
+      }
+      attr.base = 10;
+      printnum(fputch, data, num, attr);
+      break;
+
+    case 'p':
+      fputch('0', data);
+      fputch('x', data);
+      num = (unsigned long)va_arg(
