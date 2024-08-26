@@ -97,4 +97,43 @@ void vprintfmt(void (*fputch)(char, void *), void *data, const char *fmt,
     case 'p':
       fputch('0', data);
       fputch('x', data);
-      num = (unsigned long)va_arg(
+      num = (unsigned long)va_arg(ap, void *);
+      attr.base = 16;
+      printnum(fputch, data, num, attr);
+      break;
+
+    case 's':
+      str = va_arg(ap, char *);
+      if (str == NULL) {
+        str = "<null>";
+      }
+      while (*str != '\0') {
+        fputch(*str, data);
+        str++;
+      }
+      break;
+
+    case 'x':
+      num = va_arg(ap, unsigned int);
+      attr.base = 16;
+      printnum(fputch, data, num, attr);
+      break;
+
+    case 'X':
+      num = va_arg(ap, unsigned int);
+      attr.base = 16;
+      attr.uppercase = 1;
+      printnum(fputch, data, num, attr);
+      break;
+
+    case '%':
+      fputch('%', data);
+      break;
+
+    default:
+      break;
+    }
+  }
+}
+
+void sprint_putch(char c, struct SprintB
