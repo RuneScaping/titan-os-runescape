@@ -136,4 +136,26 @@ void vprintfmt(void (*fputch)(char, void *), void *data, const char *fmt,
   }
 }
 
-void sprint_putch(char c, struct SprintB
+void sprint_putch(char c, struct SprintBuf *data) {
+  *data->buf++ = c;
+  data->count++;
+}
+
+int vsprintf(char *s, const char *format, va_list ap) {
+  struct SprintBuf buf = {s, 0};
+
+  vprintfmt((void *)sprint_putch, &buf, format, ap);
+
+  return buf.count;
+}
+
+int sprintf(char *s, const char *format, ...) {
+  va_list ap;
+  int ret;
+
+  va_start(ap, format);
+  ret = vsprintf(s, format, ap);
+  va_end(ap);
+
+  return ret;
+}
